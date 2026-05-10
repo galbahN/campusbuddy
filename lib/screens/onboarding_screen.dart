@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:campusbuddy/screens/auth/login_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -64,8 +65,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 padding: const EdgeInsets.all(16.0),
                 child: TextButton(
                   onPressed: () {
-                    // Navigate to login later
-                    debugPrint('Skip to Login');
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                    );
                   },
                   child: const Text(
                     'Skip',
@@ -181,8 +186,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: ElevatedButton(
                       onPressed: _currentPage == _pages.length - 1
                           ? () {
-                              // Navigate to login later
-                              debugPrint('Go to Login');
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const LoginScreen(),
+                                ),
+                              );
                             }
                           : _nextPage,
                       style: ElevatedButton.styleFrom(
