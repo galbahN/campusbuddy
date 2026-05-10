@@ -1,6 +1,8 @@
 import 'package:campusbuddy/screens/auth/signup_screen.dart';
+import 'package:campusbuddy/screens/home/home_screen.dart';
 import 'package:campusbuddy/screens/auth/forgot_password_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:campusbuddy/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
+  final AuthService _authService = AuthService();
 
   @override
   void dispose() {
@@ -23,18 +26,40 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _login() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+void _login() async {
+  if (_formKey.currentState!.validate()) {
+    setState(() => _isLoading = true);
 
-      // Simulate loading for now — Firebase comes next
-      await Future.delayed(const Duration(seconds: 2));
+    final result = await _authService.login(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
 
-      setState(() => _isLoading = false);
+    if (!mounted) return;
+    setState(() => _isLoading = false);
 
-      debugPrint('Login tapped');
+    if (result['success']) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result['message'],
+            style: const TextStyle(fontFamily: 'Poppins'),
+          ),
+          backgroundColor: const Color(0xFFD32F2F),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {

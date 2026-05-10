@@ -1,3 +1,4 @@
+import 'package:campusbuddy/screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:campusbuddy/services/auth_service.dart';
 
@@ -52,7 +53,7 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
-void _signup() async {
+  void _signup() async {
     if (_formKey.currentState!.validate()) {
       if (_selectedCourse == null) {
         _showSnackBar('Please select your course');
@@ -77,7 +78,13 @@ void _signup() async {
 
       if (result['success']) {
         _showSnackBar('Account created successfully! 🎉');
-        debugPrint('Navigate to Home');
+        await Future.delayed(const Duration(seconds: 1));
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          );
+        }
       } else {
         _showSnackBar(result['message']);
       }
