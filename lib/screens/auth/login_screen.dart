@@ -1,3 +1,4 @@
+import 'package:campusbuddy/screens/auth/signup_screen.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -151,8 +152,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your email';
                         }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                            .hasMatch(value)) {
+                        if (!RegExp(
+                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                        ).hasMatch(value)) {
                           return 'Please enter a valid email';
                         }
                         return null;
@@ -299,9 +301,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Divider
                     const Row(
                       children: [
-                        Expanded(
-                          child: Divider(color: Color(0xFFE8F0FE)),
-                        ),
+                        Expanded(child: Divider(color: Color(0xFFE8F0FE))),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 12),
                           child: Text(
@@ -313,9 +313,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        Expanded(
-                          child: Divider(color: Color(0xFFE8F0FE)),
-                        ),
+                        Expanded(child: Divider(color: Color(0xFFE8F0FE))),
                       ],
                     ),
 
@@ -327,8 +325,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       height: 56,
                       child: OutlinedButton(
                         onPressed: () {
-                          // Navigate to signup later
-                          debugPrint('Go to Sign Up');
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SignupScreen(),
+                            ),
+                          );
                         },
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF1A73E8),
