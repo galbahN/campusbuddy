@@ -1,4 +1,5 @@
 import 'package:campusbuddy/screens/auth/signup_screen.dart';
+import 'package:campusbuddy/screens/auth/forgot_password_screen.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -67,24 +68,28 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 32),
 
               // Title
-              const Text(
-                'Welcome back! 👋',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF0A1F44),
+              Center(
+                child: const Text(
+                  'Welcome back! 👋',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF0A1F44),
+                  ),
                 ),
               ),
 
               const SizedBox(height: 8),
 
-              const Text(
-                'Login to continue your learning journey',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 14,
-                  color: Color(0xFF6B7280),
+              Center(
+                child: const Text(
+                  'Login to continue your learning journey',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 14,
+                    color: Color(0xFF6B7280),
+                  ),
                 ),
               ),
 
@@ -247,7 +252,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          debugPrint('Forgot password tapped');
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const ForgotPasswordScreen(),
+                            ),
+                          );
                         },
                         child: const Text(
                           'Forgot Password?',
