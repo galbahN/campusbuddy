@@ -23,8 +23,6 @@ class _SignupScreenState extends State<SignupScreen> {
   final List<String> _courses = [
     'BSc. Information Technology',
     'BSc. Computer Science',
-    'BSc. Computer Engineering',
-    'BSc. Electrical Engineering',
     'BSc. Mathematics',
     'BSc. Statistics',
     'BSc. Physics',
@@ -77,15 +75,10 @@ class _SignupScreenState extends State<SignupScreen> {
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(fontFamily: 'Poppins'),
-        ),
+        content: Text(message, style: const TextStyle(fontFamily: 'Poppins')),
         backgroundColor: const Color(0xFF1A73E8),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -169,8 +162,9 @@ class _SignupScreenState extends State<SignupScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your email';
                         }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                            .hasMatch(value)) {
+                        if (!RegExp(
+                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                        ).hasMatch(value)) {
                           return 'Please enter a valid email';
                         }
                         return null;
@@ -194,9 +188,11 @@ class _SignupScreenState extends State<SignupScreen> {
 
                     // Course dropdown
                     DropdownButtonFormField<String>(
-                      value: _selectedCourse,
-                      decoration: _dropdownDecoration('Course / Programme',
-                          Icons.book_outlined),
+                      initialValue: _selectedCourse,
+                      decoration: _dropdownDecoration(
+                        'Course / Programme',
+                        Icons.book_outlined,
+                      ),
                       style: const TextStyle(
                         fontFamily: 'Poppins',
                         color: Color(0xFF0A1F44),
@@ -225,9 +221,11 @@ class _SignupScreenState extends State<SignupScreen> {
 
                     // Academic year dropdown
                     DropdownButtonFormField<String>(
-                      value: _selectedYear,
+                      initialValue: _selectedYear,
                       decoration: _dropdownDecoration(
-                          'Academic Year', Icons.calendar_today_outlined),
+                        'Academic Year',
+                        Icons.calendar_today_outlined,
+                      ),
                       style: const TextStyle(
                         fontFamily: 'Poppins',
                         color: Color(0xFF0A1F44),
@@ -242,10 +240,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ),
                       items: _years.map((year) {
-                        return DropdownMenuItem(
-                          value: year,
-                          child: Text(year),
-                        );
+                        return DropdownMenuItem(value: year, child: Text(year));
                       }).toList(),
                       onChanged: (value) {
                         setState(() => _selectedYear = value);
@@ -281,8 +276,10 @@ class _SignupScreenState extends State<SignupScreen> {
                       label: 'Confirm Password',
                       obscure: _obscureConfirmPassword,
                       onToggle: () {
-                        setState(() => _obscureConfirmPassword =
-                            !_obscureConfirmPassword);
+                        setState(
+                          () => _obscureConfirmPassword =
+                              !_obscureConfirmPassword,
+                        );
                       },
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -384,10 +381,7 @@ class _SignupScreenState extends State<SignupScreen> {
       controller: controller,
       keyboardType: keyboardType,
       enabled: enabled,
-      style: const TextStyle(
-        fontFamily: 'Poppins',
-        color: Color(0xFF0A1F44),
-      ),
+      style: const TextStyle(fontFamily: 'Poppins', color: Color(0xFF0A1F44)),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(
@@ -437,10 +431,7 @@ class _SignupScreenState extends State<SignupScreen> {
     return TextFormField(
       controller: controller,
       obscureText: obscure,
-      style: const TextStyle(
-        fontFamily: 'Poppins',
-        color: Color(0xFF0A1F44),
-      ),
+      style: const TextStyle(fontFamily: 'Poppins', color: Color(0xFF0A1F44)),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(

@@ -35,8 +35,8 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    // Auto navigate after 3 seconds
-    Future.delayed(const Duration(seconds: 3), () {
+    // Auto navigate after 5 seconds
+    Future.delayed(const Duration(seconds: 5), () {
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -81,7 +81,7 @@ class _SplashScreenState extends State<SplashScreen>
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withAlpha(51),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
