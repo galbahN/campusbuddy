@@ -1,3 +1,4 @@
+import 'package:campusbuddy/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -24,18 +25,7 @@ class CampusBuddyApp extends StatelessWidget {
         fontFamily: 'Poppins',
         useMaterial3: true,
       ),
-      home: const Scaffold(
-        body: Center(
-          child: Text(
-            'CampusBuddy',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1A73E8),
-            ),
-          ),
-        ),
-      ),
+      home: const SplashScreen(),
     );
   }
 }
