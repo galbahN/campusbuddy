@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:campusbuddy/services/auth_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -13,6 +14,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final AuthService _authService = AuthService();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
@@ -50,7 +52,7 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
-  void _signup() async {
+void _signup() async {
     if (_formKey.currentState!.validate()) {
       if (_selectedCourse == null) {
         _showSnackBar('Please select your course');
@@ -63,12 +65,22 @@ class _SignupScreenState extends State<SignupScreen> {
 
       setState(() => _isLoading = true);
 
-      // Simulate loading for now — Firebase comes next
-      await Future.delayed(const Duration(seconds: 2));
+      final result = await _authService.signUp(
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        course: _selectedCourse!,
+        year: _selectedYear!,
+      );
 
       setState(() => _isLoading = false);
 
-      debugPrint('Signup tapped');
+      if (result['success']) {
+        _showSnackBar('Account created successfully! 🎉');
+        debugPrint('Navigate to Home');
+      } else {
+        _showSnackBar(result['message']);
+      }
     }
   }
 
