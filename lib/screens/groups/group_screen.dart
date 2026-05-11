@@ -1,5 +1,5 @@
 import 'package:campusbuddy/screens/groups/group_details_screen.dart';
-import 'package:campusbuddy/services/group_services.dart';
+import 'package:campusbuddy/services/group_service.dart';
 import 'package:flutter/material.dart';
 import 'package:campusbuddy/models/group_model.dart';
 import 'package:campusbuddy/services/auth_service.dart';
@@ -144,7 +144,7 @@ class _GroupsScreenState extends State<GroupsScreen>
 
   Widget _buildAllGroups() {
     return StreamBuilder<List<GroupModel>>(
-      stream: _groupService.getGroups(),
+      stream: _groupService.getMyGroups(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(

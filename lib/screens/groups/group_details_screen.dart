@@ -1,4 +1,4 @@
-import 'package:campusbuddy/services/group_services.dart';
+import 'package:campusbuddy/services/group_service.dart';
 import 'package:flutter/material.dart';
 import 'package:campusbuddy/models/group_model.dart';
 import 'package:campusbuddy/services/auth_service.dart';
@@ -240,44 +240,6 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                       ),
                     ],
                   ),
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.center,
-                  //   children: [
-                  //     const Icon(
-                  //       Icons.people_outline_rounded,
-                  //       size: 16,
-                  //       color: Color(0xFF6B7280),
-                  //     ),
-                  //     const SizedBox(width: 4),
-                  //     Text(
-                  //       '${widget.group.memberCount}/${widget.group.maxMembers} members',
-                  //       style: const TextStyle(
-                  //         fontFamily: 'Poppins',
-                  //         fontSize: 13,
-                  //         color: Color(0xFF6B7280),
-                  //       ),
-                  //     ),
-                  //     const SizedBox(width: 16),
-                  //     const Icon(
-                  //       Icons.person_outline_rounded,
-                  //       size: 16,
-                  //       color: Color(0xFF6B7280),
-                  //     ),
-                  //     const SizedBox(width: 4),
-                  //     Flexible(
-                  //       child: Text(
-                  //         'by ${widget.group.createdByName}',
-                  //         overflow: TextOverflow.ellipsis,
-                  //         maxLines: 1,
-                  //         style: const TextStyle(
-                  //           fontFamily: 'Poppins',
-                  //           fontSize: 13,
-                  //           color: Color(0xFF6B7280),
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
                 ],
               ),
             ),
@@ -319,6 +281,192 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
             ),
 
             const SizedBox(height: 24),
+            // Members list
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text(
+                        'Members',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0A1F44),
+                        ),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F0FE),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '${widget.group.memberCount}/${widget.group.maxMembers}',
+                          style: const TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1A73E8),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  FutureBuilder<List<Map<String, dynamic>>>(
+                    future: GroupService().getGroupMembers(
+                      widget.group.members,
+                    ),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF1A73E8),
+                          ),
+                        );
+                      }
+
+                      final members = snapshot.data ?? [];
+
+                      if (members.isEmpty) {
+                        return const Text(
+                          'No members found',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            color: Color(0xFF6B7280),
+                          ),
+                        );
+                      }
+
+                      return ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: members.length,
+                        separatorBuilder: (_, _) =>
+                            const Divider(color: Color(0xFFE8F0FE), height: 1),
+                        itemBuilder: (context, index) {
+                          final member = members[index];
+                          final isCreator =
+                              member['uid'] == widget.group.createdBy;
+                          final isCurrentUser =
+                              member['uid'] == AuthService().currentUser?.uid;
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Row(
+                              children: [
+                                // Avatar
+                                Container(
+                                  width: 42,
+                                  height: 42,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE8F0FE),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      member['name']
+                                          .substring(0, 1)
+                                          .toUpperCase(),
+                                      style: const TextStyle(
+                                        fontFamily: 'Poppins',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF1A73E8),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(width: 12),
+
+                                // Name & course
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              isCurrentUser
+                                                  ? '${member['name']} (You)'
+                                                  : member['name'],
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                fontFamily: 'Poppins',
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                                color: Color(0xFF0A1F44),
+                                              ),
+                                            ),
+                                          ),
+                                          if (isCreator) ...[
+                                            const SizedBox(width: 6),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 2,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF1A73E8),
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                              child: const Text(
+                                                'Admin',
+                                                style: TextStyle(
+                                                  fontFamily: 'Poppins',
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                      Text(
+                                        '${member['course']} • ${member['year']}',
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontFamily: 'Poppins',
+                                          fontSize: 12,
+                                          color: Color(0xFF6B7280),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
 
             // Join/Leave button
             if (!_isCreator)

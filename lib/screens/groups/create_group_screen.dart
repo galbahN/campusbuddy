@@ -1,4 +1,4 @@
-import 'package:campusbuddy/services/group_services.dart';
+import 'package:campusbuddy/services/group_service.dart';
 import 'package:flutter/material.dart';
 
 class CreateGroupScreen extends StatefulWidget {
