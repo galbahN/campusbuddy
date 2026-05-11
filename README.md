@@ -29,5 +29,5 @@ and collaborate academically.
 
 **Edem Galbah-Nusetor**
 BSc. Information Technology — University of Cape Coast
-[LinkedIn](https://linkedin.com) | [Twitter/X](https://twitter.com)
+[LinkedIn](https://www.linkedin.com/in/edemgalbah-nusetor) | [Twitter/X](https://twitter.com)
 *Coming soon as development progresses*
