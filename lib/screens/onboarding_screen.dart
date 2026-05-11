@@ -1,3 +1,4 @@
+import 'package:campusbuddy/screens/auth/signup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:campusbuddy/screens/auth/login_screen.dart';
 
@@ -189,7 +190,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const LoginScreen(),
+                                  builder: (context) => const SignupScreen(),
                                 ),
                               );
                             }

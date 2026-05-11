@@ -1,3 +1,4 @@
+import 'package:campusbuddy/screens/auth/login_screen.dart';
 import 'package:campusbuddy/screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:campusbuddy/services/auth_service.dart';
@@ -362,7 +363,14 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () => Navigator.pop(context),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginScreen(),
+                              ),
+                            );
+                          },
                           child: const Text(
                             'Login',
                             style: TextStyle(
