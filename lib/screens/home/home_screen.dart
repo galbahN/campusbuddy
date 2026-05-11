@@ -1,3 +1,4 @@
+import 'package:campusbuddy/screens/groups/group_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:campusbuddy/services/auth_service.dart';
 
@@ -331,11 +332,7 @@ class _HomePage extends StatelessWidget {
 class _GroupsPage extends StatelessWidget {
   const _GroupsPage();
   @override
-  Widget build(BuildContext context) => const _PlaceholderPage(
-        icon: Icons.groups_rounded,
-        title: 'Study Groups',
-        subtitle: 'Coming soon — find and join study groups',
-      );
+  Widget build(BuildContext context) => const GroupsScreen();
 }
 
 class _ResourcesPage extends StatelessWidget {
