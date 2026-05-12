@@ -1,6 +1,8 @@
+import 'package:campusbuddy/models/group_model.dart';
 import 'package:campusbuddy/screens/groups/group_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:campusbuddy/services/auth_service.dart';
+import 'package:campusbuddy/services/group_service.dart';
+import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,19 +14,35 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = [
-    const _HomePage(),
-    const _GroupsPage(),
-    const _ResourcesPage(),
-    const _QAPage(),
-    const _ProfilePage(),
-  ];
+  void navigateTo(int index) {
+    setState(() => _currentIndex = index);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> pages = [
+      _HomePage(onNavigate: navigateTo),
+      const GroupsScreen(),
+      const _PlaceholderPage(
+        icon: Icons.folder_rounded,
+        title: 'Resources',
+        subtitle: 'Coming soon — share and access course materials',
+      ),
+      const _PlaceholderPage(
+        icon: Icons.question_answer_rounded,
+        title: 'Q&A',
+        subtitle: 'Coming soon — ask and answer course questions',
+      ),
+      const _PlaceholderPage(
+        icon: Icons.person_rounded,
+        title: 'Profile',
+        subtitle: 'Coming soon — manage your profile',
+      ),
+    ];
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFF),
-      body: _pages[_currentIndex],
+      body: pages[_currentIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -88,7 +106,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
 // Home Tab
 class _HomePage extends StatelessWidget {
-  const _HomePage();
+  final Function(int) onNavigate;
+
+  const _HomePage({required this.onNavigate});
 
   @override
   Widget build(BuildContext context) {
@@ -145,14 +165,32 @@ class _HomePage extends StatelessWidget {
             const SizedBox(height: 28),
 
             // Stats row
-            Row(
-              children: [
-                _buildStatCard('Study\nGroups', '0', Icons.groups_rounded),
-                const SizedBox(width: 12),
-                _buildStatCard('Resources\nShared', '0', Icons.folder_rounded),
-                const SizedBox(width: 12),
-                _buildStatCard('Q&A\nAnswered', '0', Icons.question_answer_rounded),
-              ],
+            StreamBuilder<List<GroupModel>>(
+              stream: GroupService().getMyGroups(),
+              builder: (context, snapshot) {
+                final myGroupsCount = snapshot.data?.length ?? 0;
+                return Row(
+                  children: [
+                    _buildStatCard(
+                      'Study\nGroups',
+                      myGroupsCount.toString(),
+                      Icons.groups_rounded,
+                    ),
+                    const SizedBox(width: 12),
+                    _buildStatCard(
+                      'Resources\nShared',
+                      '0',
+                      Icons.folder_rounded,
+                    ),
+                    const SizedBox(width: 12),
+                    _buildStatCard(
+                      'Q&A\nAnswered',
+                      '0',
+                      Icons.question_answer_rounded,
+                    ),
+                  ],
+                );
+              },
             ),
 
             const SizedBox(height: 28),
@@ -182,21 +220,25 @@ class _HomePage extends StatelessWidget {
                   'Find Study Group',
                   Icons.groups_rounded,
                   const Color(0xFF1A73E8),
+                  onTap: () => onNavigate(1),
                 ),
                 _buildActionCard(
                   'Share Resource',
                   Icons.upload_file_rounded,
                   const Color(0xFF0D47A1),
+                  onTap: () => onNavigate(2),
                 ),
                 _buildActionCard(
                   'Ask a Question',
                   Icons.help_outline_rounded,
                   const Color(0xFF1A73E8),
+                  onTap: () => onNavigate(3),
                 ),
                 _buildActionCard(
                   'Browse Notes',
                   Icons.menu_book_rounded,
                   const Color(0xFF0D47A1),
+                  onTap: () => onNavigate(2),
                 ),
               ],
             ),
@@ -225,11 +267,7 @@ class _HomePage extends StatelessWidget {
               ),
               child: const Column(
                 children: [
-                  Icon(
-                    Icons.inbox_rounded,
-                    size: 48,
-                    color: Color(0xFFE8F0FE),
-                  ),
+                  Icon(Icons.inbox_rounded, size: 48, color: Color(0xFFE8F0FE)),
                   SizedBox(height: 12),
                   Text(
                     'No activity yet',
@@ -293,78 +331,50 @@ class _HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildActionCard(String title, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFE8F0FE),
-              borderRadius: BorderRadius.circular(10),
+  Widget _buildActionCard(
+    String title,
+    IconData icon,
+    Color color, {
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8F0FE),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 22),
             ),
-            child: Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF0A1F44),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF0A1F44),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-// Placeholder pages for other tabs
-class _GroupsPage extends StatelessWidget {
-  const _GroupsPage();
-  @override
-  Widget build(BuildContext context) => const GroupsScreen();
-}
-
-class _ResourcesPage extends StatelessWidget {
-  const _ResourcesPage();
-  @override
-  Widget build(BuildContext context) => const _PlaceholderPage(
-        icon: Icons.folder_rounded,
-        title: 'Resources',
-        subtitle: 'Coming soon — share and access course materials',
-      );
-}
-
-class _QAPage extends StatelessWidget {
-  const _QAPage();
-  @override
-  Widget build(BuildContext context) => const _PlaceholderPage(
-        icon: Icons.question_answer_rounded,
-        title: 'Q&A',
-        subtitle: 'Coming soon — ask and answer course questions',
-      );
-}
-
-class _ProfilePage extends StatelessWidget {
-  const _ProfilePage();
-  @override
-  Widget build(BuildContext context) => const _PlaceholderPage(
-        icon: Icons.person_rounded,
-        title: 'Profile',
-        subtitle: 'Coming soon — manage your profile',
-      );
-}
-
+// Placeholder page
 class _PlaceholderPage extends StatelessWidget {
   final IconData icon;
   final String title;
