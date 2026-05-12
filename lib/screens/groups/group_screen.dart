@@ -111,10 +111,7 @@ class _GroupsScreenState extends State<GroupsScreen>
           Expanded(
             child: TabBarView(
               controller: _tabController,
-              children: [
-                _buildAllGroups(),
-                _buildMyGroups(),
-              ],
+              children: [_buildAllGroups(), _buildMyGroups()],
             ),
           ),
         ],
@@ -123,9 +120,7 @@ class _GroupsScreenState extends State<GroupsScreen>
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => const CreateGroupScreen(),
-            ),
+            MaterialPageRoute(builder: (context) => const CreateGroupScreen()),
           );
         },
         backgroundColor: const Color(0xFF1A73E8),
@@ -133,10 +128,7 @@ class _GroupsScreenState extends State<GroupsScreen>
         icon: const Icon(Icons.add_rounded),
         label: const Text(
           'New Group',
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600),
         ),
       ),
     );
@@ -144,7 +136,7 @@ class _GroupsScreenState extends State<GroupsScreen>
 
   Widget _buildAllGroups() {
     return StreamBuilder<List<GroupModel>>(
-      stream: _groupService.getMyGroups(),
+      stream: _groupService.getGroups(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
@@ -162,9 +154,11 @@ class _GroupsScreenState extends State<GroupsScreen>
 
         final groups = snapshot.data ?? [];
         final filtered = groups
-            .where((g) =>
-                g.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                g.course.toLowerCase().contains(_searchQuery.toLowerCase()))
+            .where(
+              (g) =>
+                  g.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                  g.course.toLowerCase().contains(_searchQuery.toLowerCase()),
+            )
             .toList();
 
         if (filtered.isEmpty) {
@@ -202,9 +196,11 @@ class _GroupsScreenState extends State<GroupsScreen>
 
         final groups = snapshot.data ?? [];
         final filtered = groups
-            .where((g) =>
-                g.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                g.course.toLowerCase().contains(_searchQuery.toLowerCase()))
+            .where(
+              (g) =>
+                  g.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                  g.course.toLowerCase().contains(_searchQuery.toLowerCase()),
+            )
             .toList();
 
         if (filtered.isEmpty) {

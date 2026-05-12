@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:campusbuddy/models/group_model.dart';
 import 'package:campusbuddy/services/auth_service.dart';
-import 'package:flutter/foundation.dart';
 
 class GroupService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -21,7 +20,6 @@ class GroupService {
       final user = _authService.currentUser;
       if (user == null) return {'success': false, 'message': 'Not logged in'};
 
-      // Get user's name from Firestore
       final userDoc = await _firestore.collection('users').doc(user.uid).get();
       final userName = userDoc.data()?['name'] ?? 'Unknown';
 
@@ -42,31 +40,25 @@ class GroupService {
     }
   }
 
-  // Get all groups as a stream
-  // Stream<List<GroupModel>> getGroups() {
-  //   return _groups.orderBy('createdAt', descending: true).snapshots().map((
-  //     snapshot,
-  //   ) {
-  //     return snapshot.docs.map((doc) => GroupModel.fromFirestore(doc)).toList();
-  //   });
-  // }
+  // Get all groups
+  Stream<List<GroupModel>> getGroups() {
+    return _groups.orderBy('createdAt', descending: true).snapshots().map((
+      snapshot,
+    ) {
+      return snapshot.docs.map((doc) => GroupModel.fromFirestore(doc)).toList();
+    });
+  }
 
+  // Get my groups
   Stream<List<GroupModel>> getMyGroups() {
     final user = _authService.currentUser;
-
-    debugPrint('Current user UID: ${user?.uid}');
-
-    if (user == null) {
-      debugPrint('No user logged in!');
-      return const Stream.empty();
-    }
+    if (user == null) return const Stream.empty();
 
     return _groups
         .where('members', arrayContains: user.uid)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-          debugPrint('My Groups count: ${snapshot.docs.length}');
           return snapshot.docs
               .map((doc) => GroupModel.fromFirestore(doc))
               .toList();
