@@ -1,6 +1,7 @@
 import 'package:campusbuddy/models/group_model.dart';
 import 'package:campusbuddy/models/resource_model.dart';
 import 'package:campusbuddy/screens/groups/group_screen.dart';
+import 'package:campusbuddy/screens/qa/qa_screen.dart';
 import 'package:campusbuddy/screens/resource_screen.dart';
 import 'package:campusbuddy/services/auth_service.dart';
 import 'package:campusbuddy/services/group_service.dart';
@@ -27,11 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _HomePage(onNavigate: navigateTo),
       const GroupsScreen(),
       const ResourcesScreen(),
-      const _PlaceholderPage(
-        icon: Icons.question_answer_rounded,
-        title: 'Q&A',
-        subtitle: 'Coming soon — ask and answer course questions',
-      ),
+      const QAScreen(),
       const _PlaceholderPage(
         icon: Icons.person_rounded,
         title: 'Profile',
