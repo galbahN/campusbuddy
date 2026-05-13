@@ -38,6 +38,16 @@ class _GroupsScreenState extends State<GroupsScreen>
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        // leading: IconButton(
+        //   icon: const Icon(
+        //     Icons.arrow_back_rounded,
+        //     color: Colors.black,
+        //     size: 40,
+        //   ),
+        //   onPressed: () {
+        //     Navigator.pop(context);
+        //   },
+        // ),
         title: const Text(
           'Study Groups',
           style: TextStyle(

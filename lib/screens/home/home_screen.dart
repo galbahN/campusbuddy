@@ -1,7 +1,10 @@
 import 'package:campusbuddy/models/group_model.dart';
+import 'package:campusbuddy/models/resource_model.dart';
 import 'package:campusbuddy/screens/groups/group_screen.dart';
+import 'package:campusbuddy/screens/resource_screen.dart';
 import 'package:campusbuddy/services/auth_service.dart';
 import 'package:campusbuddy/services/group_service.dart';
+import 'package:campusbuddy/services/resource_service.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -23,11 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final List<Widget> pages = [
       _HomePage(onNavigate: navigateTo),
       const GroupsScreen(),
-      const _PlaceholderPage(
-        icon: Icons.folder_rounded,
-        title: 'Resources',
-        subtitle: 'Coming soon — share and access course materials',
-      ),
+      const ResourcesScreen(),
       const _PlaceholderPage(
         icon: Icons.question_answer_rounded,
         title: 'Q&A',
@@ -167,28 +166,34 @@ class _HomePage extends StatelessWidget {
             // Stats row
             StreamBuilder<List<GroupModel>>(
               stream: GroupService().getMyGroups(),
-              builder: (context, snapshot) {
-                final myGroupsCount = snapshot.data?.length ?? 0;
-                return Row(
-                  children: [
-                    _buildStatCard(
-                      'Study\nGroups',
-                      myGroupsCount.toString(),
-                      Icons.groups_rounded,
-                    ),
-                    const SizedBox(width: 12),
-                    _buildStatCard(
-                      'Resources\nShared',
-                      '0',
-                      Icons.folder_rounded,
-                    ),
-                    const SizedBox(width: 12),
-                    _buildStatCard(
-                      'Q&A\nAnswered',
-                      '0',
-                      Icons.question_answer_rounded,
-                    ),
-                  ],
+              builder: (context, groupSnapshot) {
+                final myGroupsCount = groupSnapshot.data?.length ?? 0;
+                return StreamBuilder<List<ResourceModel>>(
+                  stream: ResourceService().getMyResources(),
+                  builder: (context, resourceSnapshot) {
+                    final myResourcesCount = resourceSnapshot.data?.length ?? 0;
+                    return Row(
+                      children: [
+                        _buildStatCard(
+                          'Study\nGroups',
+                          myGroupsCount.toString(),
+                          Icons.groups_rounded,
+                        ),
+                        const SizedBox(width: 12),
+                        _buildStatCard(
+                          'Resources\nShared',
+                          myResourcesCount.toString(),
+                          Icons.folder_rounded,
+                        ),
+                        const SizedBox(width: 12),
+                        _buildStatCard(
+                          'Q&A\nAnswered',
+                          '0',
+                          Icons.question_answer_rounded,
+                        ),
+                      ],
+                    );
+                  },
                 );
               },
             ),
