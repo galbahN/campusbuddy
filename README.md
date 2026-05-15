@@ -1,19 +1,19 @@
-# CampusBuddy 📚
+# CampusBuddy
 
 A mobile app built with Flutter to help university students
 form study groups, connect with classmates, share resources
 and collaborate academically.
 
-## ✨ Features
+## Features
 
-- 🔐 User authentication (Sign up / Login)
-- 👤 Student profile setup by course & year
-- 👥 Study group creation & matching
-- 💬 In-app chat & forums
-- ❓ Course-based Q&A sections
-- 📁 Resource sharing (notes, PDFs, materials)
+- User authentication (Sign up / Login)
+- Student profile setup by course & year
+- Study group creation & matching
+- In-app chat & forums
+- Course-based Q&A sections
+- Resource sharing (notes, PDFs, materials)
 
-## 🛠 Tech Stack
+## Tech Stack
 
 - Flutter & Dart
 - Firebase Auth
@@ -21,11 +21,11 @@ and collaborate academically.
 - Firebase Storage
 - Firebase Cloud Messaging
 
-## 🚧 Status
+## Status
 
 > Currently in active development — Phase 1 (Authentication & Profiles)
 
-## 👨‍💻 Author
+## Author
 
 **Edem Galbah-Nusetor**
 BSc. Information Technology — University of Cape Coast
