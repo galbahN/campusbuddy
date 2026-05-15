@@ -1,3 +1,4 @@
+import 'package:campusbuddy/services/activity_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:campusbuddy/models/group_model.dart';
 import 'package:campusbuddy/services/auth_service.dart';
@@ -33,6 +34,13 @@ class GroupService {
         'createdAt': FieldValue.serverTimestamp(),
         'maxMembers': maxMembers,
       });
+
+      // Log the activity
+      await ActivityService().logActivity(
+        type: 'group_created',
+        title: 'Created a study group',
+        subtitle: name,
+      );
 
       return {'success': true, 'message': 'Group created successfully'};
     } catch (e) {
@@ -98,6 +106,13 @@ class GroupService {
       await _groups.doc(groupId).update({
         'members': FieldValue.arrayUnion([user.uid]),
       });
+
+      // Log the activity
+      await ActivityService().logActivity(
+        type: 'group_joined',
+        title: 'Joined a study group',
+        subtitle: group.name,
+      );
 
       return {'success': true, 'message': 'Joined group successfully'};
     } catch (e) {
