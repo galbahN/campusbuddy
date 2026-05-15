@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:campusbuddy/services/activity_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:campusbuddy/models/resource_model.dart';
@@ -56,6 +57,13 @@ class ResourceService {
         'uploadedByName': userName,
         'uploadedAt': FieldValue.serverTimestamp(),
       });
+
+      //Log activity
+      await ActivityService().logActivity(
+        type: 'resource_uploaded',
+        title: 'Uploaded a resource',
+        subtitle: title,
+      );
 
       return {'success': true, 'message': 'Resource uploaded successfully'};
     } catch (e) {

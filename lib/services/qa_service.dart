@@ -1,4 +1,6 @@
 import 'package:campusbuddy/models/question_model.dart';
+import 'package:campusbuddy/services/activity_service.dart';
+import 'package:campusbuddy/services/notification_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:campusbuddy/models/answer_model.dart';
 import 'package:campusbuddy/services/auth_service.dart';
@@ -40,6 +42,13 @@ class QAService {
         'isSolved': false,
         'acceptedAnswerId': null,
       });
+
+      // Log activity
+      await ActivityService().logActivity(
+        type: 'question_asked',
+        title: 'Asked a question',
+        subtitle: title,
+      );
 
       return {'success': true, 'message': 'Question posted successfully'};
     } catch (e) {
@@ -148,7 +157,6 @@ class QAService {
   }
 
   // ==================== ANSWERS ====================
-
   // Post an answer
   Future<Map<String, dynamic>> postAnswer({
     required String questionId,
@@ -180,6 +188,28 @@ class QAService {
       await _questions.doc(questionId).update({
         'answerCount': FieldValue.increment(1),
       });
+
+      // Send notification to question author
+      final questionDoc = await _questions.doc(questionId).get();
+      final questionData = questionDoc.data() as Map<String, dynamic>;
+      final questionAuthorId = questionData['askedBy'];
+      final questionTitle = questionData['title'];
+
+      // Only notify if answerer is not the question author
+      if (questionAuthorId != user.uid) {
+        await NotificationService().notifyQuestionAnswered(
+          questionAuthorId: questionAuthorId,
+          questionTitle: questionTitle,
+          answeredByName: userName,
+        );
+      }
+
+      //Log activity
+      await ActivityService().logActivity(
+        type: 'answer_posted',
+        title: 'Answered a question',
+        subtitle: body.length > 50 ? '${body.substring(0, 50)}...' : body,
+      );
 
       return {'success': true, 'message': 'Answer posted successfully'};
     } catch (e) {
