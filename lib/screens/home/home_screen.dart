@@ -1,3 +1,4 @@
+import 'package:campusbuddy/screens/profile/profile_screen.dart';
 import 'package:campusbuddy/services/activity_service.dart';
 import 'package:campusbuddy/services/notification_service.dart';
 import 'package:campusbuddy/services/qa_service.dart';
@@ -33,11 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
       const GroupsScreen(),
       const ResourcesScreen(),
       const QAScreen(),
-      const _PlaceholderPage(
-        icon: Icons.person_rounded,
-        title: 'Profile',
-        subtitle: 'Coming soon — manage your profile',
-      ),
+      const ProfileScreen(),
     ];
 
     return Scaffold(
@@ -675,60 +672,5 @@ Color _getActivityColor(String type) {
       return const Color(0xFF6A1B9A);
     default:
       return const Color(0xFF6B7280);
-  }
-}
-
-// Placeholder page
-class _PlaceholderPage extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  const _PlaceholderPage({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE8F0FE),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Icon(icon, size: 40, color: const Color(0xFF1A73E8)),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: const TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF0A1F44),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 13,
-                color: Color(0xFF6B7280),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
