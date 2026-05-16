@@ -108,10 +108,11 @@ class _NotificationsScreenState extends State<NotificationsScreen>
               borderRadius: BorderRadius.circular(12),
             ),
             onSelected: (value) async {
+              final messenger = ScaffoldMessenger.of(context);
               if (value == 'mark_all_read') {
                 await _notificationService.markAllAsRead();
                 if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
+                messenger.showSnackBar(
                   SnackBar(
                     content: const Text(
                       'All notifications marked as read',
@@ -276,11 +277,12 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                 child: const Icon(Icons.delete_rounded, color: Colors.white),
               ),
               onDismissed: (_) async {
+                final messenger = ScaffoldMessenger.of(context);
                 await _notificationService.deleteNotification(
                   notification['id'],
                 );
                 if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
+                messenger.showSnackBar(
                   SnackBar(
                     content: const Text(
                       'Notification deleted',
