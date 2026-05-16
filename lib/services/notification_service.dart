@@ -153,4 +153,26 @@ class NotificationService {
     }
     await batch.commit();
   }
+
+  // Delete single notification
+  Future<void> deleteNotification(String notificationId) async {
+    await _firestore.collection('notifications').doc(notificationId).delete();
+  }
+
+  // Delete all notifications
+  Future<void> deleteAllNotifications() async {
+    final user = _authService.currentUser;
+    if (user == null) return;
+
+    final batch = _firestore.batch();
+    final notifications = await _firestore
+        .collection('notifications')
+        .where('userId', isEqualTo: user.uid)
+        .get();
+
+    for (var doc in notifications.docs) {
+      batch.delete(doc.reference);
+    }
+    await batch.commit();
+  }
 }

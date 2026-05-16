@@ -1,5 +1,5 @@
-import 'package:campusbuddy/screens/resource_detail_screen.dart';
-import 'package:campusbuddy/screens/upload_resource_screen.dart';
+import 'package:campusbuddy/screens/resource/resource_detail_screen.dart';
+import 'package:campusbuddy/screens/resource/upload_resource_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:campusbuddy/models/resource_model.dart';
 import 'package:campusbuddy/services/resource_service.dart';
