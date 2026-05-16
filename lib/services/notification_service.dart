@@ -52,9 +52,9 @@ class NotificationService {
 
     final token = await _fcm.getToken();
     if (token != null) {
-      await _firestore.collection('users').doc(user.uid).update({
+      await _firestore.collection('users').doc(user.uid).set({
         'fcmToken': token,
-      });
+      }, SetOptions(merge: true));
     }
   }
 
