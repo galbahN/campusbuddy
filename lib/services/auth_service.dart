@@ -15,6 +15,7 @@ class AuthService {
   Future<Map<String, dynamic>> signUp({
     required String name,
     required String email,
+    required String phone,
     required String password,
     required String course,
     required String year,
@@ -33,6 +34,7 @@ class AuthService {
         'uid': user?.uid,
         'name': name,
         'email': email,
+        'phone': phone,
         'course': course,
         'year': year,
         'university': 'University of Cape Coast',
@@ -54,10 +56,7 @@ class AuthService {
     required String password,
   }) async {
     try {
-      await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
       return {'success': true, 'message': 'Login successful'};
     } on FirebaseAuthException catch (e) {
       return {'success': false, 'message': _handleAuthError(e.code)};
@@ -67,9 +66,7 @@ class AuthService {
   }
 
   // Forgot Password
-  Future<Map<String, dynamic>> resetPassword({
-    required String email,
-  }) async {
+  Future<Map<String, dynamic>> resetPassword({required String email}) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
       return {'success': true, 'message': 'Password reset email sent'};

@@ -91,6 +91,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final nameController = TextEditingController(
       text: _userData?['name'] ?? '',
     );
+    final phoneController = TextEditingController(
+      text: _userData?['phone'] ?? '',
+    );
     String? selectedCourse = _userData?['course'];
     String? selectedYear = _userData?['year'];
 
@@ -153,6 +156,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   prefixIcon: const Icon(
                     Icons.person_outline_rounded,
+                    color: Color(0xFF1A73E8),
+                  ),
+                  filled: true,
+                  fillColor: const Color(0xFFF8FAFF),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: Color(0xFFE8F0FE)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: Color(0xFFE8F0FE)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF1A73E8),
+                      width: 2,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: phoneController,
+                keyboardType: TextInputType.phone,
+                style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  color: Color(0xFF0A1F44),
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Phone Number',
+                  labelStyle: const TextStyle(
+                    fontFamily: 'Poppins',
+                    color: Color(0xFF6B7280),
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.phone_outlined,
                     color: Color(0xFF1A73E8),
                   ),
                   filled: true,
@@ -268,6 +308,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     await _firestore.collection('users').doc(user.uid).update({
                       'name': nameController.text.trim(),
+                      'phone': phoneController.text.trim(),
                       'course': selectedCourse,
                       'year': selectedYear,
                     });
@@ -339,6 +380,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           IconButton(
             icon: const Icon(Icons.edit_outlined, color: Color(0xFF1A73E8)),
             onPressed: _editProfile,
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout_rounded, color: Color(0xFFD32F2F)),
+            onPressed: _logout,
           ),
         ],
       ),

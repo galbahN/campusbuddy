@@ -14,6 +14,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final AuthService _authService = AuthService();
@@ -49,6 +50,7 @@ class _SignupScreenState extends State<SignupScreen> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -70,6 +72,7 @@ class _SignupScreenState extends State<SignupScreen> {
       final result = await _authService.signUp(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
+        phone: _phoneController.text.trim(),
         password: _passwordController.text,
         course: _selectedCourse!,
         year: _selectedYear!,
@@ -193,6 +196,25 @@ class _SignupScreenState extends State<SignupScreen> {
 
                     const SizedBox(height: 16),
 
+                    // Phone number
+                    _buildTextField(
+                      controller: _phoneController,
+                      label: 'Phone Number',
+                      icon: Icons.phone_outlined,
+                      keyboardType: TextInputType.phone,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your phone number';
+                        }
+                        if (!RegExp(r'^\+?[0-9]{7,15}$').hasMatch(value)) {
+                          return 'Please enter a valid phone number';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+
                     // University (pre-filled)
                     _buildTextField(
                       controller: TextEditingController(
@@ -210,7 +232,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     DropdownButtonFormField<String>(
                       initialValue: _selectedCourse,
                       decoration: _dropdownDecoration(
-                        'Course / Programme',
+                        'Programme',
                         Icons.book_outlined,
                       ),
                       style: const TextStyle(
@@ -219,7 +241,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         fontSize: 14,
                       ),
                       hint: const Text(
-                        'Select your course',
+                        'Select your programme',
                         style: TextStyle(
                           fontFamily: 'Poppins',
                           color: Color(0xFF6B7280),
