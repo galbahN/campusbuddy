@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:campusbuddy/screens/profile/notifications_screen.dart';
+import 'package:campusbuddy/services/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:campusbuddy/services/auth_service.dart';
 import 'package:campusbuddy/services/group_service.dart';
@@ -9,6 +12,7 @@ import 'package:campusbuddy/models/resource_model.dart';
 import 'package:campusbuddy/models/question_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:campusbuddy/screens/auth/login_screen.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -20,6 +24,8 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final AuthService _authService = AuthService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final StorageService _storageService = StorageService();
+  bool _isUploadingPhoto = false;
   Map<String, dynamic>? _userData;
   bool _isLoading = true;
 
@@ -38,6 +44,130 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _userData = doc.data();
       _isLoading = false;
     });
+  }
+
+  void _pickProfilePhoto() async {
+    final picker = ImagePicker();
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Choose Photo',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF0A1F44),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ListTile(
+              leading: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F0FE),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.camera_alt_rounded,
+                  color: Color(0xFF1A73E8),
+                ),
+              ),
+              title: const Text(
+                'Take a photo',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF0A1F44),
+                ),
+              ),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F0FE),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.photo_library_rounded,
+                  color: Color(0xFF1A73E8),
+                ),
+              ),
+              title: const Text(
+                'Choose from gallery',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF0A1F44),
+                ),
+              ),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null) return;
+
+    final picked = await picker.pickImage(
+      source: source,
+      imageQuality: 70,
+      maxWidth: 512,
+      maxHeight: 512,
+    );
+
+    if (picked == null) return;
+
+    setState(() => _isUploadingPhoto = true);
+
+    final url = await _storageService.uploadProfilePhoto(File(picked.path));
+
+    if (!mounted) return;
+    setState(() => _isUploadingPhoto = false);
+
+    if (url != null) {
+      _loadUserData();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Profile photo updated! ✅',
+            style: TextStyle(fontFamily: 'Poppins'),
+          ),
+          backgroundColor: const Color(0xFF1A73E8),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Failed to upload photo',
+            style: TextStyle(fontFamily: 'Poppins'),
+          ),
+          backgroundColor: const Color(0xFFD32F2F),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+    }
   }
 
   void _logout() async {
@@ -406,25 +536,79 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Column(
                       children: [
                         // Avatar
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1A73E8),
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          child: Center(
-                            child: Text(
-                              (_userData?['name'] ?? 'S')
-                                  .substring(0, 1)
-                                  .toUpperCase(),
-                              style: const TextStyle(
-                                fontFamily: 'Poppins',
-                                fontSize: 32,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
+                        GestureDetector(
+                          onTap: _pickProfilePhoto,
+                          child: Stack(
+                            children: [
+                              Container(
+                                width: 90,
+                                height: 90,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1A73E8),
+                                  borderRadius: BorderRadius.circular(24),
+                                  image:
+                                      _userData?['profileImage'] != null &&
+                                          _userData!['profileImage']
+                                              .toString()
+                                              .isNotEmpty
+                                      ? DecorationImage(
+                                          image: NetworkImage(
+                                            _userData!['profileImage'],
+                                          ),
+                                          fit: BoxFit.cover,
+                                        )
+                                      : null,
+                                ),
+                                child: _isUploadingPhoto
+                                    ? const Center(
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : _userData?['profileImage'] == null ||
+                                          _userData!['profileImage']
+                                              .toString()
+                                              .isEmpty
+                                    ? Center(
+                                        child: Text(
+                                          (_userData?['name'] ?? 'S')
+                                              .substring(0, 1)
+                                              .toUpperCase(),
+                                          style: const TextStyle(
+                                            fontFamily: 'Poppins',
+                                            fontSize: 32,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      )
+                                    : null,
                               ),
-                            ),
+
+                              // Edit icon
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Container(
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF1A73E8),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.camera_alt_rounded,
+                                    size: 14,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
 

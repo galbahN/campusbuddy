@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:campusbuddy/widgets/user_avatar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -21,8 +22,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  bool _isSending = false;
   final FirebaseStorage _storage = FirebaseStorage.instance;
+  bool _isSending = false;
   bool _isUploading = false;
   double _uploadProgress = 0;
 
@@ -42,10 +43,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     _messageController.clear();
 
     try {
-      // Get user name
-      final userDoc = await _firestore.collection('users').doc(user.uid).get();
-      final userName =
-          userDoc.data()?['name'] ??
+      final userDoc =
+          await _firestore.collection('users').doc(user.uid).get();
+      final userName = userDoc.data()?['name'] ??
           user.displayName ??
           user.email?.split('@').first ??
           'Unknown';
@@ -54,10 +54,11 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         'text': text,
         'sentBy': user.uid,
         'sentByName': userName,
+        'senderPhotoUrl': user.photoURL ?? '',
         'sentAt': FieldValue.serverTimestamp(),
+        'isFile': false,
       });
 
-      // Scroll to bottom
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
@@ -86,13 +87,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     setState(() => _isSending = false);
   }
 
-  @override
-  void dispose() {
-    _messageController.dispose();
-    _scrollController.dispose();
-    super.dispose();
-  }
-
   Future<void> _shareFile() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -111,15 +105,13 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     });
 
     try {
-      // Get user name
-      final userDoc = await _firestore.collection('users').doc(user.uid).get();
-      final userName =
-          userDoc.data()?['name'] ??
+      final userDoc =
+          await _firestore.collection('users').doc(user.uid).get();
+      final userName = userDoc.data()?['name'] ??
           user.displayName ??
           user.email?.split('@').first ??
           'Unknown';
 
-      // Upload to Firebase Storage
       final storageRef = _storage
           .ref()
           .child('group_files')
@@ -137,11 +129,11 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       final snapshot = await uploadTask;
       final fileUrl = await snapshot.ref.getDownloadURL();
 
-      // Send as message with file info
       await _messages.add({
         'text': file.name,
         'sentBy': user.uid,
         'sentByName': userName,
+        'senderPhotoUrl': user.photoURL ?? '',
         'sentAt': FieldValue.serverTimestamp(),
         'isFile': true,
         'fileUrl': fileUrl,
@@ -169,6 +161,13 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         );
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -237,7 +236,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: CircularProgressIndicator(color: Color(0xFF1A73E8)),
+                    child: CircularProgressIndicator(
+                      color: Color(0xFF1A73E8),
+                    ),
                   );
                 }
 
@@ -285,7 +286,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   );
                 }
 
-                // Auto scroll to bottom on new messages
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (_scrollController.hasClients) {
                     _scrollController.animateTo(
@@ -301,10 +301,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   padding: const EdgeInsets.all(16),
                   itemCount: docs.length,
                   itemBuilder: (context, index) {
-                    final data = docs[index].data() as Map<String, dynamic>;
+                    final data =
+                        docs[index].data() as Map<String, dynamic>;
                     final isMe = data['sentBy'] == currentUid;
-                    final isFirstFromSender =
-                        index == 0 ||
+                    final isFirstFromSender = index == 0 ||
                         (docs[index - 1].data()
                                 as Map<String, dynamic>)['sentBy'] !=
                             data['sentBy'];
@@ -335,53 +335,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             ),
             child: Row(
               children: [
-                // Text field
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    maxLines: 4,
-                    minLines: 1,
-                    textCapitalization: TextCapitalization.sentences,
-                    style: const TextStyle(
-                      fontFamily: 'Poppins',
-                      color: Color(0xFF0A1F44),
-                      fontSize: 14,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'Type a message...',
-                      hintStyle: const TextStyle(
-                        fontFamily: 'Poppins',
-                        color: Color(0xFF6B7280),
-                        fontSize: 14,
-                      ),
-                      filled: true,
-                      fillColor: const Color(0xFFF8FAFF),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: const BorderSide(color: Color(0xFFE8F0FE)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: const BorderSide(color: Color(0xFFE8F0FE)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF1A73E8),
-                          width: 2,
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                    ),
-                    onSubmitted: (_) => _sendMessage(),
-                  ),
-                ),
-
-                const SizedBox(width: 8),
-
                 // Attachment button
                 GestureDetector(
                   onTap: _isUploading ? null : _shareFile,
@@ -408,6 +361,55 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                             color: Color(0xFF1A73E8),
                             size: 22,
                           ),
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                // Text field
+                Expanded(
+                  child: TextField(
+                    controller: _messageController,
+                    maxLines: 4,
+                    minLines: 1,
+                    textCapitalization: TextCapitalization.sentences,
+                    style: const TextStyle(
+                      fontFamily: 'Poppins',
+                      color: Color(0xFF0A1F44),
+                      fontSize: 14,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Type a message...',
+                      hintStyle: const TextStyle(
+                        fontFamily: 'Poppins',
+                        color: Color(0xFF6B7280),
+                        fontSize: 14,
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFF),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide:
+                            const BorderSide(color: Color(0xFFE8F0FE)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide:
+                            const BorderSide(color: Color(0xFFE8F0FE)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF1A73E8),
+                          width: 2,
+                        ),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                    ),
+                    onSubmitted: (_) => _sendMessage(),
                   ),
                 ),
 
@@ -446,6 +448,99 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     );
   }
 
+  Widget _buildMessageBubble({
+    required Map<String, dynamic> data,
+    required bool isMe,
+    required bool showName,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment:
+            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          // Sender name
+          if (showName)
+            Padding(
+              padding: const EdgeInsets.only(left: 48, bottom: 4),
+              child: Text(
+                data['sentByName'] ?? '',
+                style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1A73E8),
+                ),
+              ),
+            ),
+
+          Row(
+            mainAxisAlignment:
+                isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              // Avatar for other users
+              if (!isMe)
+                Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  child: UserAvatar(
+                    photoUrl: data['senderPhotoUrl'],
+                    name: data['sentByName'] ?? 'U',
+                    size: 32,
+                    borderRadius: 10,
+                    fontSize: 13,
+                  ),
+                ),
+
+              // Message bubble
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isMe
+                        ? const Color(0xFF1A73E8)
+                        : Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(18),
+                      topRight: const Radius.circular(18),
+                      bottomLeft: Radius.circular(isMe ? 18 : 4),
+                      bottomRight: Radius.circular(isMe ? 4 : 18),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: data['isFile'] == true
+                      ? _buildFileBubble(data: data, isMe: isMe)
+                      : Text(
+                          data['text'] ?? '',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 14,
+                            color: isMe
+                                ? Colors.white
+                                : const Color(0xFF0A1F44),
+                            height: 1.4,
+                          ),
+                        ),
+                ),
+              ),
+
+              if (isMe) const SizedBox(width: 8),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFileBubble({
     required Map<String, dynamic> data,
     required bool isMe,
@@ -454,6 +549,50 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     final fileName = data['fileName'] ?? 'File';
     final fileSize = data['fileSize'] ?? 0;
 
+    // Show image preview for image files
+    if (['jpg', 'jpeg', 'png'].contains(fileType)) {
+      return GestureDetector(
+        onTap: () async {
+          final uri = Uri.parse(data['fileUrl'] ?? '');
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          }
+        },
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.network(
+            data['fileUrl'] ?? '',
+            width: 200,
+            height: 200,
+            fit: BoxFit.cover,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return SizedBox(
+                width: 200,
+                height: 200,
+                child: Center(
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                            loadingProgress.expectedTotalBytes!
+                        : null,
+                    color: isMe ? Colors.white : const Color(0xFF1A73E8),
+                    strokeWidth: 2,
+                  ),
+                ),
+              );
+            },
+            errorBuilder: (context, error, stackTrace) => const Icon(
+              Icons.broken_image_rounded,
+              color: Color(0xFF6B7280),
+              size: 48,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Document file card
     Color fileColor;
     IconData fileIcon;
 
@@ -471,12 +610,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       case 'pptx':
         fileColor = const Color(0xFFFF6D00);
         fileIcon = Icons.slideshow_rounded;
-        break;
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-        fileColor = const Color(0xFF6A1B9A);
-        fileIcon = Icons.image_rounded;
         break;
       default:
         fileColor = const Color(0xFF6B7280);
@@ -523,7 +656,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     fontFamily: 'Poppins',
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: isMe ? Colors.white : const Color(0xFF0A1F44),
+                    color:
+                        isMe ? Colors.white : const Color(0xFF0A1F44),
                   ),
                 ),
                 Text(
@@ -538,108 +672,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMessageBubble({
-    required Map<String, dynamic> data,
-    required bool isMe,
-    required bool showName,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Column(
-        crossAxisAlignment: isMe
-            ? CrossAxisAlignment.end
-            : CrossAxisAlignment.start,
-        children: [
-          // Sender name
-          if (showName)
-            Padding(
-              padding: const EdgeInsets.only(left: 12, bottom: 4),
-              child: data['isFile'] == true
-                  ? _buildFileBubble(data: data, isMe: isMe)
-                  : Text(
-                      data['text'] ?? '',
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 14,
-                        color: isMe ? Colors.white : const Color(0xFF0A1F44),
-                        height: 1.4,
-                      ),
-                    ),
-            ),
-
-          Row(
-            mainAxisAlignment: isMe
-                ? MainAxisAlignment.end
-                : MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              // Avatar for other users
-              if (!isMe)
-                Container(
-                  width: 32,
-                  height: 32,
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1A73E8),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Center(
-                    child: Text(
-                      (data['sentByName'] ?? 'U').substring(0, 1).toUpperCase(),
-                      style: const TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-
-              // Message bubble
-              Flexible(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isMe ? const Color(0xFF1A73E8) : Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(18),
-                      topRight: const Radius.circular(18),
-                      bottomLeft: Radius.circular(isMe ? 18 : 4),
-                      bottomRight: Radius.circular(isMe ? 4 : 18),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    data['text'] ?? '',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 14,
-                      color: isMe ? Colors.white : const Color(0xFF0A1F44),
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-              ),
-
-              // Spacer for my messages
-              if (isMe) const SizedBox(width: 8),
-            ],
           ),
         ],
       ),

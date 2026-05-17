@@ -174,6 +174,7 @@ class GroupService {
             'name': doc.data()?['name'] ?? 'Unknown',
             'course': doc.data()?['course'] ?? '',
             'year': doc.data()?['year'] ?? '',
+            'profileImage': doc.data()?['profileImage'] ?? '',
           });
         }
       }

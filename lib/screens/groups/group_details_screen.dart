@@ -1,5 +1,6 @@
 import 'package:campusbuddy/screens/groups/group_chat_screen.dart';
 import 'package:campusbuddy/services/group_service.dart';
+import 'package:campusbuddy/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:campusbuddy/models/group_model.dart';
 import 'package:campusbuddy/services/auth_service.dart';
@@ -394,26 +395,12 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                             child: Row(
                               children: [
                                 // Avatar
-                                Container(
-                                  width: 42,
-                                  height: 42,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFE8F0FE),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      member['name']
-                                          .substring(0, 1)
-                                          .toUpperCase(),
-                                      style: const TextStyle(
-                                        fontFamily: 'Poppins',
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xFF1A73E8),
-                                      ),
-                                    ),
-                                  ),
+                                UserAvatar(
+                                  photoUrl: member['profileImage'],
+                                  name: member['name'],
+                                  size: 42,
+                                  borderRadius: 12,
+                                  fontSize: 16,
                                 ),
 
                                 const SizedBox(width: 12),
