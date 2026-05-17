@@ -6,7 +6,8 @@ import 'package:campusbuddy/services/auth_service.dart';
 import 'package:campusbuddy/screens/groups/create_group_screen.dart';
 
 class GroupsScreen extends StatefulWidget {
-  const GroupsScreen({super.key});
+  final int initialTab;
+  const GroupsScreen({super.key, this.initialTab = 0});
 
   @override
   State<GroupsScreen> createState() => _GroupsScreenState();
@@ -22,7 +23,11 @@ class _GroupsScreenState extends State<GroupsScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: widget.initialTab,
+    );
   }
 
   @override
@@ -38,16 +43,6 @@ class _GroupsScreenState extends State<GroupsScreen>
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        // leading: IconButton(
-        //   icon: const Icon(
-        //     Icons.arrow_back_rounded,
-        //     color: Colors.black,
-        //     size: 40,
-        //   ),
-        //   onPressed: () {
-        //     Navigator.pop(context);
-        //   },
-        // ),
         title: const Text(
           'Study Groups',
           style: TextStyle(

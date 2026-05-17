@@ -1,3 +1,4 @@
+import 'package:campusbuddy/screens/groups/group_chat_screen.dart';
 import 'package:campusbuddy/services/group_service.dart';
 import 'package:flutter/material.dart';
 import 'package:campusbuddy/models/group_model.dart';
@@ -112,6 +113,28 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFF),
+      floatingActionButton: _isMember
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => GroupChatScreen(group: widget.group),
+                  ),
+                );
+              },
+              backgroundColor: const Color(0xFF1A73E8),
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.chat_rounded),
+              label: const Text(
+                'Group Chat',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            )
+          : null,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,

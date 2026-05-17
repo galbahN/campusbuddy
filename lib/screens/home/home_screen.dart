@@ -425,10 +425,17 @@ class _HomePage extends StatelessWidget {
                   onTap: () => onNavigate(3),
                 ),
                 _buildActionCard(
-                  'Browse Notes',
-                  Icons.menu_book_rounded,
+                  'Group Chats',
+                  Icons.chat_rounded,
                   const Color(0xFF0D47A1),
-                  onTap: () => onNavigate(2),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const GroupsScreen(initialTab: 1),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
