@@ -27,6 +27,12 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   bool _isUploading = false;
   double _uploadProgress = 0;
 
+  // Reply state
+  Map<String, dynamic>? _replyingTo;
+
+  bool get _isAdmin =>
+      widget.group.createdBy == _authService.currentUser?.uid;
+
   CollectionReference get _messages => _firestore
       .collection('groups')
       .doc(widget.group.id)
@@ -42,6 +48,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     setState(() => _isSending = true);
     _messageController.clear();
 
+    final replyData = _replyingTo;
+    setState(() => _replyingTo = null);
+
     try {
       final userDoc =
           await _firestore.collection('users').doc(user.uid).get();
@@ -50,14 +59,24 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           user.email?.split('@').first ??
           'Unknown';
 
-      await _messages.add({
+      final messageData = {
         'text': text,
         'sentBy': user.uid,
         'sentByName': userName,
         'senderPhotoUrl': user.photoURL ?? '',
         'sentAt': FieldValue.serverTimestamp(),
         'isFile': false,
-      });
+      };
+
+      // Add reply info if replying
+      if (replyData != null) {
+        messageData['replyTo'] = replyData['sentByName'] ?? 'Unknown';
+        messageData['replyText'] = replyData['isFile'] == true
+            ? '📎 ${replyData['fileName'] ?? 'File'}'
+            : replyData['text'] ?? '';
+      }
+
+      await _messages.add(messageData);
 
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
@@ -85,6 +104,161 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     }
 
     setState(() => _isSending = false);
+  }
+
+  Future<void> _deleteMessage(String messageId, String sentBy) async {
+    final user = _authService.currentUser;
+    if (user == null) return;
+
+    // Only message author or admin can delete
+    if (sentBy != user.uid && !_isAdmin) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'Delete Message',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: const Text(
+          'Are you sure you want to delete this message?',
+          style: TextStyle(fontFamily: 'Poppins'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                color: Color(0xFF6B7280),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Delete',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                color: Color(0xFFD32F2F),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    await _messages.doc(messageId).delete();
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Message deleted',
+            style: TextStyle(fontFamily: 'Poppins'),
+          ),
+          backgroundColor: const Color(0xFF1A73E8),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+    }
+  }
+
+  void _showMessageOptions(
+    String messageId,
+    String sentBy,
+    Map<String, dynamic> data,
+  ) {
+    final user = _authService.currentUser;
+    if (user == null) return;
+
+    final canDelete = sentBy == user.uid || _isAdmin;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Reply option
+            ListTile(
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F0FE),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.reply_rounded,
+                  color: Color(0xFF1A73E8),
+                ),
+              ),
+              title: const Text(
+                'Reply',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF0A1F44),
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                setState(() => _replyingTo = data);
+              },
+            ),
+
+            // Delete option
+            if (canDelete)
+              ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFEBEE),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.delete_outline_rounded,
+                    color: Color(0xFFD32F2F),
+                  ),
+                ),
+                title: Text(
+                  _isAdmin && sentBy != user.uid
+                      ? 'Delete (Admin)'
+                      : 'Delete',
+                  style: const TextStyle(
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFFD32F2F),
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _deleteMessage(messageId, sentBy);
+                },
+              ),
+
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _shareFile() async {
@@ -199,7 +373,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               ),
             ),
             Text(
-              '${widget.group.memberCount} members',
+              '${widget.group.memberCount} members${_isAdmin ? ' • Admin' : ''}',
               style: const TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 12,
@@ -301,24 +475,90 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   padding: const EdgeInsets.all(16),
                   itemCount: docs.length,
                   itemBuilder: (context, index) {
-                    final data =
-                        docs[index].data() as Map<String, dynamic>;
+                    final doc = docs[index];
+                    final data = doc.data() as Map<String, dynamic>;
                     final isMe = data['sentBy'] == currentUid;
                     final isFirstFromSender = index == 0 ||
                         (docs[index - 1].data()
                                 as Map<String, dynamic>)['sentBy'] !=
                             data['sentBy'];
 
-                    return _buildMessageBubble(
-                      data: data,
-                      isMe: isMe,
-                      showName: isFirstFromSender && !isMe,
+                    return GestureDetector(
+                      onLongPress: () => _showMessageOptions(
+                        doc.id,
+                        data['sentBy'] ?? '',
+                        data,
+                      ),
+                      child: _buildMessageBubble(
+                        data: data,
+                        isMe: isMe,
+                        showName: isFirstFromSender && !isMe,
+                      ),
                     );
                   },
                 );
               },
             ),
           ),
+
+          // Reply preview
+          if (_replyingTo != null)
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
+              color: const Color(0xFFE8F0FE),
+              child: Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1A73E8),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Replying to ${_replyingTo!['sentByName'] ?? 'Unknown'}',
+                          style: const TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1A73E8),
+                          ),
+                        ),
+                        Text(
+                          _replyingTo!['isFile'] == true
+                              ? '📎 ${_replyingTo!['fileName'] ?? 'File'}'
+                              : _replyingTo!['text'] ?? '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 12,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: Color(0xFF6B7280),
+                      size: 20,
+                    ),
+                    onPressed: () => setState(() => _replyingTo = null),
+                  ),
+                ],
+              ),
+            ),
 
           // Message input
           Container(
@@ -379,7 +619,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Type a message...',
+                      hintText: _replyingTo != null
+                          ? 'Reply to ${_replyingTo!['sentByName']}...'
+                          : 'Type a message...',
                       hintStyle: const TextStyle(
                         fontFamily: 'Poppins',
                         color: Color(0xFF6B7280),
@@ -517,19 +759,74 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                       ),
                     ],
                   ),
-                  child: data['isFile'] == true
-                      ? _buildFileBubble(data: data, isMe: isMe)
-                      : Text(
-                          data['text'] ?? '',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 14,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Reply preview inside bubble
+                      if (data['replyTo'] != null)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
                             color: isMe
-                                ? Colors.white
-                                : const Color(0xFF0A1F44),
-                            height: 1.4,
+                                ? Colors.white.withValues(alpha: 0.2)
+                                : const Color(0xFFE8F0FE),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border(
+                              left: BorderSide(
+                                color: isMe
+                                    ? Colors.white
+                                    : const Color(0xFF1A73E8),
+                                width: 3,
+                              ),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                data['replyTo'] ?? '',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: isMe
+                                      ? Colors.white
+                                      : const Color(0xFF1A73E8),
+                                ),
+                              ),
+                              Text(
+                                data['replyText'] ?? '',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 11,
+                                  color: isMe
+                                      ? Colors.white.withValues(alpha: 0.8)
+                                      : const Color(0xFF6B7280),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+
+                      // Message content
+                      data['isFile'] == true
+                          ? _buildFileBubble(data: data, isMe: isMe)
+                          : Text(
+                              data['text'] ?? '',
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 14,
+                                color: isMe
+                                    ? Colors.white
+                                    : const Color(0xFF0A1F44),
+                                height: 1.4,
+                              ),
+                            ),
+                    ],
+                  ),
                 ),
               ),
 
@@ -549,7 +846,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     final fileName = data['fileName'] ?? 'File';
     final fileSize = data['fileSize'] ?? 0;
 
-    // Show image preview for image files
     if (['jpg', 'jpeg', 'png'].contains(fileType)) {
       return GestureDetector(
         onTap: () async {
@@ -576,7 +872,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                         ? loadingProgress.cumulativeBytesLoaded /
                             loadingProgress.expectedTotalBytes!
                         : null,
-                    color: isMe ? Colors.white : const Color(0xFF1A73E8),
+                    color: isMe
+                        ? Colors.white
+                        : const Color(0xFF1A73E8),
                     strokeWidth: 2,
                   ),
                 ),
@@ -592,7 +890,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       );
     }
 
-    // Document file card
     Color fileColor;
     IconData fileIcon;
 
@@ -656,8 +953,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     fontFamily: 'Poppins',
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color:
-                        isMe ? Colors.white : const Color(0xFF0A1F44),
+                    color: isMe ? Colors.white : const Color(0xFF0A1F44),
                   ),
                 ),
                 Text(
