@@ -175,6 +175,8 @@ class GroupService {
             'course': doc.data()?['course'] ?? '',
             'year': doc.data()?['year'] ?? '',
             'profileImage': doc.data()?['profileImage'] ?? '',
+            'isOnline': doc.data()?['isOnline'] ?? false,
+            'lastSeen': doc.data()?['lastSeen'],
           });
         }
       }

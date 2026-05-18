@@ -1,3 +1,4 @@
+import 'package:campusbuddy/services/auth_service.dart';
 import 'package:campusbuddy/services/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -11,8 +12,40 @@ void main() async {
   runApp(const CampusBuddyApp());
 }
 
-class CampusBuddyApp extends StatelessWidget {
+class CampusBuddyApp extends StatefulWidget {
   const CampusBuddyApp({super.key});
+
+  @override
+  State<CampusBuddyApp> createState() => _CampusBuddyAppState();
+}
+
+class _CampusBuddyAppState extends State<CampusBuddyApp>
+    with WidgetsBindingObserver {
+  final AuthService _authService = AuthService();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _authService.setOnlineStatus(true);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _authService.setOnlineStatus(false);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _authService.setOnlineStatus(true);
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      _authService.setOnlineStatus(false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

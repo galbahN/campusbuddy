@@ -395,12 +395,35 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                             child: Row(
                               children: [
                                 // Avatar
-                                UserAvatar(
-                                  photoUrl: member['profileImage'],
-                                  name: member['name'],
-                                  size: 42,
-                                  borderRadius: 12,
-                                  fontSize: 16,
+                                // Avatar with online indicator
+                                Stack(
+                                  children: [
+                                    UserAvatar(
+                                      photoUrl: member['profileImage'],
+                                      name: member['name'],
+                                      size: 42,
+                                      borderRadius: 12,
+                                      fontSize: 16,
+                                    ),
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: Container(
+                                        width: 12,
+                                        height: 12,
+                                        decoration: BoxDecoration(
+                                          color: member['isOnline'] == true
+                                              ? const Color(0xFF2E7D32)
+                                              : const Color(0xFF6B7280),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: 2,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
 
                                 const SizedBox(width: 12),
@@ -460,6 +483,19 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                                           fontFamily: 'Poppins',
                                           fontSize: 12,
                                           color: Color(0xFF6B7280),
+                                        ),
+                                      ),
+                                      Text(
+                                        member['isOnline'] == true
+                                            ? '🟢 Online'
+                                            : '⚫ Offline',
+                                        style: TextStyle(
+                                          fontFamily: 'Poppins',
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                          color: member['isOnline'] == true
+                                              ? const Color(0xFF2E7D32)
+                                              : const Color(0xFF6B7280),
                                         ),
                                       ),
                                     ],

@@ -26,26 +26,46 @@ class UserAvatar extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1A73E8),
         borderRadius: BorderRadius.circular(borderRadius),
-        image: hasPhoto
-            ? DecorationImage(
-                image: NetworkImage(photoUrl!),
-                fit: BoxFit.cover,
-              )
-            : null,
       ),
-      child: hasPhoto
-          ? null
-          : Center(
-              child: Text(
-                name.isNotEmpty ? name.substring(0, 1).toUpperCase() : 'U',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: fontSize,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-            ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: hasPhoto
+            ? Image.network(
+                photoUrl!,
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                // Show initials while loading
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return _buildInitials();
+                },
+                // Show initials if image fails
+                errorBuilder: (context, error, stackTrace) {
+                  return _buildInitials();
+                },
+              )
+            : _buildInitials(),
+      ),
+    );
+  }
+
+  Widget _buildInitials() {
+    return Container(
+      width: size,
+      height: size,
+      color: const Color(0xFF1A73E8),
+      child: Center(
+        child: Text(
+          name.isNotEmpty ? name.substring(0, 1).toUpperCase() : 'U',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontSize: fontSize,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+      ),
     );
   }
 }

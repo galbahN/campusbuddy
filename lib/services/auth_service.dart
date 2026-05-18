@@ -103,4 +103,18 @@ class AuthService {
         return 'An error occurred, please try again';
     }
   }
+
+  // Update online status
+Future<void> setOnlineStatus(bool isOnline) async {
+  final user = currentUser;
+  if (user == null) return;
+
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(user.uid)
+      .set({
+    'isOnline': isOnline,
+    'lastSeen': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+}
 }
